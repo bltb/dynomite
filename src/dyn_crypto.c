@@ -215,54 +215,49 @@ crypto_deinit(void)
 char*
 base64_encode(const unsigned char *message, const size_t length)
 {
-	BIO *bio;
-	BIO *b64;
-	FILE* stream;
+	BIO *bio, *b64;
+	BUF_MEM *messagePtr;
 
-	int encodedSize = 4*ceil((double)length/3);
-	char *buffer = (char*)malloc(encodedSize+1);
-	if(buffer == NULL) {
-		fprintf(stderr, "Failed to allocate memory\n");
-		exit(1);
-	}
-
-	stream = fmemopen(buffer, encodedSize+1, "w");
 	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_new_fp(stream, BIO_NOCLOSE);
+	bio = BIO_new(BIO_s_mem());
 	bio = BIO_push(b64, bio);
+
 	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 	BIO_write(bio, message, length);
-	(void)BIO_flush(bio);
+	BIO_flush(bio);
+	BIO_get_mem_ptr(bio, &messagePtr);
+	BIO_set_close(bio, BIO_NOCLOSE);
 	BIO_free_all(bio);
-	fclose(stream);
 
-	return buffer;
+	return ((*messagePtr).data); // XXX. is this pointer use correct?
 }
 
+#include <assert.h>
 
+// XXX. why is this order not consistent with base64_encode?
+// XXX. is this even used?
 int
 base64_decode(const char *b64message, const size_t length, unsigned char **buffer)
 {
 	BIO *bio;
 	BIO *b64;
+
+	// XXX. why is length passed around?
 	int decodedLength = calc_decode_length(b64message, length);
 
+	int l = 0;
+    // XXX. do we really need to check every malloc?
 	*buffer = (unsigned char*)malloc(decodedLength+1);
-	if(*buffer == NULL) {
-		fprintf(stderr, "Failed to allocate memory\n");
-		exit(1);
-	}
-	FILE* stream = fmemopen((char*)b64message, length, "r");
+    assert(*buffer != NULL);
 
+	bio = BIO_new_mem_buf((void *)b64message, -1);
 	b64 = BIO_new(BIO_f_base64());
-	bio = BIO_new_fp(stream, BIO_NOCLOSE);
 	bio = BIO_push(b64, bio);
-	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-	decodedLength = BIO_read(bio, *buffer, length);
-	(*buffer)[decodedLength] = '\0';
 
+	BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
+	l = BIO_read(bio, *buffer, strlen(b64message));
+	assert(l == decodedLength); //length should equal decodeLen, else something went horribly wrong
 	BIO_free_all(bio);
-	fclose(stream);
 
 	return decodedLength;
 }
@@ -278,7 +273,7 @@ calc_decode_length(const char *b64input, const size_t length) {
 	else if (b64input[length-1] == '=')
 		padding = 1;
 
-	return (int)length*0.75 - padding;
+	return (length*3)/4 - padding;
 }
 
 rstatus_t
