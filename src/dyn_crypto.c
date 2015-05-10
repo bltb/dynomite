@@ -210,6 +210,8 @@ crypto_deinit(void)
 }
 
 
+// https://gist.github.com/barrysteyn/7308212
+//
 char*
 base64_encode(const unsigned char *message, const size_t length)
 {
