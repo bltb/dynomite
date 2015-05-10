@@ -119,7 +119,8 @@ string_compare(const struct string *s1, const struct string *s2)
     return dn_strncmp(s1->data, s2->data, s1->len);
 }
 
-/*
+#if defined(__sun)
+/* Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu> */
 char *
 strndup (const char *s, size_t n)
 {
@@ -133,7 +134,8 @@ strndup (const char *s, size_t n)
   if (!result)
     return 0;
 
+  memcpy (result, s, len);
   result[len] = '\0';
-  return (char *) memcpy (result, s, len);
+  return(result);
 }
-*/
+#endif
