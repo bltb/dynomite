@@ -33,3 +33,4 @@ int Base64Decode(char* b64message, uint8_t** buffer, size_t* length) { //Decodes
 
 	return (0); //success
 }
+
