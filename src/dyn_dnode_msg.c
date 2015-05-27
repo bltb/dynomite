@@ -11,6 +11,8 @@
 #include "dyn_server.h"
 #include "proto/dyn_proto.h"
 
+#include <assert.h>
+
 static uint8_t version = VERSION_10;
 
 static uint64_t dmsg_id;          /* message id counter */
@@ -31,7 +33,7 @@ dyn_parse_core(struct msg *r)
 {
    struct dmsg *dmsg;
    struct mbuf *b;
-   uint8_t *p, *token, *start_pos;
+   uint8_t *p = NULL, *token, *start_pos;
    uint8_t ch = ' ';
    uint64_t num = 0;
 
@@ -431,6 +433,7 @@ dyn_parse_core(struct msg *r)
    error:
    log_debug(LOG_ERR, "at error for state %d and c %c", state, *p);
    r->result = MSG_PARSE_ERROR;
+   assert(p == NULL);
    r->pos = p;
    errno = EINVAL;
 
@@ -677,8 +680,6 @@ dmsg_put(struct dmsg *dmsg)
 void
 dmsg_dump(struct dmsg *dmsg)
 {
-    struct mbuf *mbuf;
-
     log_debug(LOG_VVVERB, "dmsg dump: id %"PRIu64" version %d  bit_field %d type %d len %"PRIu32"  plen %"PRIu32" ",
                  dmsg->id, dmsg->version, dmsg->bit_field, dmsg->type, dmsg->mlen, dmsg->plen);
 }
