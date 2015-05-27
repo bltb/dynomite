@@ -112,6 +112,8 @@ write_char(uint8_t *pos, char ch)
    pos += 1;
 }
 
+// XXX. WTF. recursion? to write bytes to a buffer?
+// what does this do? it looks like a sprintf with uint64_t? can we use PRIu64?
 static int
 write_number(uint8_t *pos, uint64_t num, int *count)
 {
@@ -124,6 +126,8 @@ write_number(uint8_t *pos, uint64_t num, int *count)
    write_number(pos, num / 10, count);
    write_char(pos + (*count), '0' + (num % 10));
    *count = *count + 1;
+
+   // is this a BUG? FIXME. wrong type? should we return *count?
    return count;
 }
 
