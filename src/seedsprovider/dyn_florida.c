@@ -73,7 +73,7 @@ hash_seeds(uint8_t *seeds, size_t length)
 uint8_t florida_get_seeds(struct context * ctx, struct mbuf *seeds_buf) {
 	struct sockaddr_in *remote;
 	uint32_t sock;
-	uint32_t tmpres;
+	int32_t tmpres;
 	uint8_t *get;
 	uint8_t buf[BUFSIZ + 1];
 
@@ -163,7 +163,7 @@ uint8_t florida_get_seeds(struct context * ctx, struct mbuf *seeds_buf) {
 
 uint32_t create_tcp_socket()
 {
-	uint32_t sock;
+	int32_t sock;
 	if((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0){
 		log_debug(LOG_VVERB, "Unable to create TCP socket");
 		return DN_ERROR;
