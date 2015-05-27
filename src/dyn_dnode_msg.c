@@ -481,7 +481,7 @@ dyn_parse_req(struct msg *r)
 			if (dmsg->mlen > 1) {
 				//Decrypt AES key
 				dyn_rsa_decrypt(dmsg->data, aes_decrypted_buf);
-				strncpy(r->owner->aes_key, aes_decrypted_buf, strlen(aes_decrypted_buf));
+				memcpy(r->owner->aes_key, aes_decrypted_buf, strlen(aes_decrypted_buf));
 			}
 
 			if (dmsg->plen + b->pos <= b->last) {
@@ -588,7 +588,7 @@ void dyn_parse_rsp(struct msg *r)
 			if (dmsg->mlen > 1) {
 				//Decrypt AES key
 				dyn_rsa_decrypt(dmsg->data, aes_decrypted_buf);
-				strncpy(r->owner->aes_key, aes_decrypted_buf, strlen(aes_decrypted_buf));
+				memcpy(r->owner->aes_key, aes_decrypted_buf, strlen(aes_decrypted_buf));
 			}
 
 			if (dmsg->plen + b->pos <= b->last) {

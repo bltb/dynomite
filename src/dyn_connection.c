@@ -185,7 +185,8 @@ _conn_get(void)
     //conn->non_bytes_send = 0;
 
     unsigned char *ase_key = generate_aes_key();
-    strncpy(conn->aes_key, ase_key, strlen(ase_key)); //generate a new key for each connection
+
+    memcpy(conn->aes_key, ase_key, strlen(ase_key)); //generate a new key for each connection
 
     return conn;
 }
