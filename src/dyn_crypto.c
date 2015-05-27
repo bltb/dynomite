@@ -149,7 +149,6 @@ aes_init(void)
 static rstatus_t
 crypto_pool_each_init(void *elem, void *data)
 {
-	rstatus_t status;
     struct server_pool *sp = elem;
 
 	//TODOs: check returned statuses
@@ -277,7 +276,7 @@ calc_decode_length(const char *b64input, const size_t length) {
 }
 
 rstatus_t
-aes_encrypt(const unsigned char *msg, size_t msg_len, unsigned char **enc_msg, unsigned char *aes_key)
+aes_encrypt(const unsigned char *msg, size_t msg_len, unsigned char **enc_msg, unsigned char *ae_local_aes_key)
 {
 	size_t block_len  = 0;
 	size_t enc_msg_len = 0;
@@ -286,8 +285,8 @@ aes_encrypt(const unsigned char *msg, size_t msg_len, unsigned char **enc_msg, u
 	if(enc_msg == NULL)
 		return DN_ERROR;
 
-	//if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, aes_key, aes_iv)) {
-	if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, aes_key, aes_key)) {
+	//if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, ae_local_aes_key, aes_iv)) {
+	if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, ae_local_aes_key, ae_local_aes_key)) {
 		log_debug(LOG_VERB, "This is bad data in EVP_EncryptInit_ex : '%.*s'", msg_len, msg);
 		return DN_ERROR;
 	}
@@ -310,7 +309,7 @@ aes_encrypt(const unsigned char *msg, size_t msg_len, unsigned char **enc_msg, u
 
 
 rstatus_t
-dyn_aes_encrypt(const unsigned char *msg, size_t msg_len, struct mbuf *mbuf, unsigned char *aes_key)
+dyn_aes_encrypt(const unsigned char *msg, size_t msg_len, struct mbuf *mbuf, unsigned char *dae_local_aes_key)
 {
 
 	size_t block_len  = 0;
@@ -318,8 +317,8 @@ dyn_aes_encrypt(const unsigned char *msg, size_t msg_len, struct mbuf *mbuf, uns
 
 	ASSERT(mbuf != NULL && mbuf->last == mbuf->pos);
 
-	//if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, aes_key, aes_iv)) {
-	if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, aes_key, aes_key)) {
+	//if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, dae_local_aes_key, aes_iv)) {
+	if(!EVP_EncryptInit_ex(aes_encrypt_ctx, aes_cipher, NULL, dae_local_aes_key, dae_local_aes_key)) {
 		loga_hexdump(msg, msg_len, "Bad data in EVP_EncryptInit_ex, crypto data with %ld bytes of data", msg_len);
 		return DN_ERROR;
 	}
@@ -349,7 +348,7 @@ dyn_aes_encrypt(const unsigned char *msg, size_t msg_len, struct mbuf *mbuf, uns
 
 
 rstatus_t
-dyn_aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, struct mbuf *mbuf, unsigned char *aes_key)
+dyn_aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, struct mbuf *mbuf, unsigned char *dad_local_aes_key)
 {
 	if (ENCRYPTION) {
 		size_t dec_len   = 0;
@@ -357,8 +356,8 @@ dyn_aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, struct mbuf *mbuf, u
 
 		ASSERT(mbuf != NULL && mbuf->start == mbuf->pos);
 
-		//if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, aes_key, aes_iv)) {
-		if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, aes_key, aes_key)) {
+		//if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, dad_local_aes_key, aes_iv)) {
+		if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, dad_local_aes_key, dad_local_aes_key)) {
 			loga_hexdump(enc_msg, enc_msg_len, "Bad data in EVP_DecryptInit_ex, crypto data with %ld bytes of data", enc_msg_len);
 			return DN_ERROR;
 		}
@@ -391,7 +390,7 @@ dyn_aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, struct mbuf *mbuf, u
  *
  */
 rstatus_t
-dyn_aes_encrypt_msg(struct msg *msg, unsigned char *aes_key)
+dyn_aes_encrypt_msg(struct msg *msg, unsigned char *daem_local_aes_key)
 {
 	struct mhdr mhdr_tem;
 	size_t count = 0;
@@ -416,7 +415,7 @@ dyn_aes_encrypt_msg(struct msg *msg, unsigned char *aes_key)
 			return DN_ERROR;
 		}
 
-		int n = dyn_aes_encrypt(mbuf->start, mbuf->last - mbuf->start, nbuf, aes_key);
+		int n = dyn_aes_encrypt(mbuf->start, mbuf->last - mbuf->start, nbuf, daem_local_aes_key);
 		if (n > 0)
 			count += n;
 
@@ -446,7 +445,7 @@ dyn_aes_encrypt_msg(struct msg *msg, unsigned char *aes_key)
 
 
 rstatus_t
-aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, unsigned char **dec_msg, unsigned char *aes_key) {
+aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, unsigned char **dec_msg, unsigned char *ad_local_aes_key) {
 	size_t dec_len   = 0;
 	size_t block_len = 0;
 
@@ -454,8 +453,8 @@ aes_decrypt(unsigned char *enc_msg, size_t enc_msg_len, unsigned char **dec_msg,
 	if(*dec_msg == NULL)
 		return DN_ERROR;
 
-	//if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, aes_key, aes_iv)) {
-	if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, aes_key, aes_key)) {
+	//if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, ad_local_aes_key, aes_iv)) {
+	if(!EVP_DecryptInit_ex(aes_decrypt_ctx, aes_cipher, NULL, ad_local_aes_key, ad_local_aes_key)) {
 		log_debug(LOG_VERB, "This is bad data in EVP_DecryptInit_ex : '%.*s'", enc_msg_len, enc_msg);
 		return DN_ERROR;
 	}
