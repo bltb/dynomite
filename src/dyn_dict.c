@@ -51,6 +51,10 @@
 #include <sys/time.h>
 #include <ctype.h>
 
+#include "dyn_dict.h"
+#include "dyn_core.h"
+
+
 
 
 
