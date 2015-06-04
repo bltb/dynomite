@@ -14,6 +14,8 @@ typedef enum dmsg_version {
     VERSION_10 = 1
 } dmsg_version_t;
 
+// XXX. FIXME. global state variable? WTF?
+
 enum {
         DYN_START = 0,
         DYN_MAGIC_STRING = 1000,
