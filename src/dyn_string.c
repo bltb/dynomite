@@ -75,10 +75,13 @@ string_duplicate(struct string *dst, const struct string *src)
     ASSERT(dst->len == 0 && dst->data == NULL);
     ASSERT(src->len != 0 && src->data != NULL);
 
-    dst->data = dn_strndup(src->data, src->len + 1);
+    dst->data = malloc(src->len + 1);
+
     if (dst->data == NULL) {
         return DN_ENOMEM;
     }
+
+    dn_memcpy(dst->data, src->data, src->len + 1);
 
     dst->len = src->len;
     dst->data[dst->len] = '\0';
@@ -89,13 +92,19 @@ string_duplicate(struct string *dst, const struct string *src)
 rstatus_t
 string_copy(struct string *dst, const uint8_t *src, uint32_t srclen)
 {
+    // XXX. isn't this going to leak if dst->data already points to some malloc-ed memory?
+    // XXX. WTF? so why comment this assert out?
+    //
     //ASSERT(dst->len == 0 && dst->data == NULL);
     ASSERT(src != NULL && srclen != 0);
 
-    dst->data = dn_strndup(src, srclen + 1);
+    dst->data = malloc(srclen + 1);
+
     if (dst->data == NULL) {
         return DN_ENOMEM;
     }
+
+    dn_memcpy(dst->data, src, srclen + 1);
 
     dst->len = srclen;
     dst->data[dst->len] = '\0';
